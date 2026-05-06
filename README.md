@@ -505,14 +505,36 @@ land inside Codex's sandbox-writable state directory — is what makes the
 
 ## Trace artifacts
 
-Full agent trajectories — including raw stdout, ATIF event streams, verifier
-output, and judge rationales — are too large to ship inside this repository.
-They will be released separately, after the post-translation re-run completes,
-in a companion repository at
-[`anonyy-coder/skilllens-artifacts`](https://github.com/anonyy-coder/skilllens-artifacts).
+The companion artifacts repository at
+[`anonyy-coder/skilllens-artifacts`](https://github.com/anonyy-coder/skilllens-artifacts)
+already publishes the **evaluation outcomes** for the 227-skill × 8-run
+sweep reported in the paper — per-skill judge verdicts, capability-level
+summaries, the aggregate CSV, the run / category index, and SHA-256
+checksums for integrity verification. The artifacts site at
+[`anonyy-coder.github.io/skilllens-artifacts`](https://anonyy-coder.github.io/skilllens-artifacts/)
+exposes the same payloads through a search-first UI.
 
-To anonymize a freshly generated trial tree before sharing it (for example,
-before pushing your own re-run to a public artifacts repo), run:
+**Full per-trial trajectories** — Harbor's raw `trajectory.json`,
+`agent/`, `command-N/`, `verifier_result.json`, and the rest of the
+trial tree — are not yet packaged here. The corpus is large
+(~150–300 GB before sanitization) and the per-trial output requires
+additional sanitization beyond what the published summaries already
+went through (mock-network capture logs, transient sandbox API
+endpoints, container-internal paths). **Trajectories will be
+released as a separate companion bundle after the review period
+concludes**, when sanitization can be audited end-to-end without
+double-blind constraints.
+
+For reviewers: the published per-skill JSONs under
+`skilllens-artifacts/docs/data/skills/*.json` already contain the
+LLM-judge verdicts (`utility_judge`, `security_judge` blocks) and
+capability-dimension scoring needed to evaluate the methodology.
+The trajectories add audit-level traceability (exact agent actions
+per rollout) but are not required to assess the paper's claims.
+
+If you are running your own evaluation against the published code
+and want to anonymize a freshly generated trial tree before
+sharing it, the included sanitizer accepts a job tree directly:
 
 ```bash
 python scripts/sanitize_traces.py \
