@@ -124,6 +124,80 @@
     return { tone: "bad", word: "Do not install" };
   }
 
+  /* The headline plain-English verdict — what the user really wants to see. */
+  function overallVerdict(u, s) {
+    const g = u && u.pass_rate_gain;
+    const score = s && s.score;
+    const findings = (s && s.findings) || [];
+    const triggered = findings.filter(function (f) { return f.risk_triggered === true; }).length;
+
+    // Catastrophic safety wins
+    if (score != null && score < 50) {
+      return {
+        tone: "bad",
+        word: "DO NOT INSTALL",
+        glyph: "⛔",
+        reason: triggered + " confirmed exploit" + (triggered === 1 ? "" : "s") +
+                " in the runtime sandbox" + (g != null && g > 0.10 ? "  ·  even though it shows " + (g * 100).toFixed(0) + "&nbsp;pp gain over baseline." : "."),
+      };
+    }
+    // Performance regression
+    if (g != null && g < -0.05) {
+      return {
+        tone: "bad",
+        word: "SKIP",
+        glyph: "✗",
+        reason: "Installing this skill makes the agent " + (Math.abs(g) * 100).toFixed(1) + " pp worse than the no-skill baseline.",
+      };
+    }
+    // Real risks but useful — sandbox required
+    if (score != null && score < 65) {
+      return {
+        tone: "bad",
+        word: "SANDBOX ONLY",
+        glyph: "⚠",
+        reason: "Useful (" + (g != null ? ((g >= 0 ? "+" : "") + (g * 100).toFixed(0) + " pp") : "—") +
+                ") but " + triggered + " confirmed exploit" + (triggered === 1 ? "" : "s") +
+                " — only adopt behind a hardened sandbox.",
+      };
+    }
+    // Borderline safety — test first
+    if (score != null && score < 90) {
+      const wording = (g != null && g >= 0.05)
+        ? "Useful (+" + (g * 100).toFixed(0) + " pp) with weak findings; pilot before rollout."
+        : "Marginal value with weak findings; prefer alternatives if you have any.";
+      return {
+        tone: "warn",
+        word: "TEST FIRST",
+        glyph: "⊘",
+        reason: wording,
+      };
+    }
+    // Safe — but is it useful?
+    if (g != null && g >= 0.05) {
+      return {
+        tone: "good",
+        word: "ADOPT",
+        glyph: "✓",
+        reason: "Safe to install — " + (g * 100).toFixed(0) + " pp gain over the no-skill baseline with no triggered risks.",
+      };
+    }
+    if (g != null && g <= 0) {
+      return {
+        tone: "neutral",
+        word: "NO MEASURED VALUE",
+        glyph: "◎",
+        reason: "Safe to install but does not measurably improve task completion above the no-skill baseline.",
+      };
+    }
+    return {
+      tone: "warn",
+      word: "MARGINAL",
+      glyph: "○",
+      reason: "Small effectiveness gain with no triggered risks. Worth installing if it solves a specific task.",
+    };
+  }
+
   /* ------------------------------------------------- 2. Lens view render */
 
   function renderLensView(detail) {
@@ -137,25 +211,40 @@
     const effT = effectivenessTier(u.pass_rate_gain);
     const eff2 = efficiencyTier(u.efficiency_score);
     const safT = safetyTier(s.score, s.findings);
+    const verdict = overallVerdict(u, s);
 
     view.innerHTML = "";
 
-    // ---- HEAD ----
+    // ---- HEAD: which skill we're inspecting ----
     const head = el("div", { class: "lens-head fade-in" });
-    const meta = el("div", { class: "replay-meta" });
-    meta.appendChild(el("span", { class: "id" }, "audit_run · " + (detail.name || "—").slice(0, 6) + "_" + Math.abs(hashCode(detail.name)).toString(16).slice(0, 4)));
-    meta.appendChild(el("span", null, [document.createTextNode("scenarios "), el("b", null, String((u.scenarios || []).length))]));
-    meta.appendChild(el("span", null, [document.createTextNode("findings "), el("b", null, String((s.findings || []).length))]));
-    meta.appendChild(el("span", { class: "replay-tag" }, "replay · frozen 2026-05-04"));
-    head.appendChild(meta);
-
-    head.appendChild(el("h2", null, detail.name));
-    head.appendChild(el("div", { class: "skill-cat" }, [
+    const who = el("div", { class: "who" });
+    who.appendChild(el("span", { class: "now" }, "Inspecting"));
+    who.appendChild(el("h2", null, detail.name));
+    who.appendChild(el("span", { class: "skill-cat" }, [
       document.createTextNode("owner "),
       el("b", { style: "color: var(--fg-2);" }, detail.owner || "—"),
       document.createTextNode("  ·  " + categoryLabel(detail.category)),
+      document.createTextNode("  ·  " + ((u.scenarios || []).length) + " scenarios"),
     ]));
+    head.appendChild(who);
     view.appendChild(head);
+
+    // ---- BIG VERDICT PILL (the headline answer) ----
+    const verdictBlock = el("div", { class: "lens-verdict fade-in" });
+    const pill = el("div", { class: "lens-verdict-pill tone-" + verdict.tone });
+    pill.appendChild(el("span", { class: "word" }, [
+      el("span", { class: "glyph" }, verdict.glyph || ""),
+      document.createTextNode(verdict.word),
+    ]));
+    const reason = el("span", { class: "reason" });
+    reason.innerHTML = verdict.reason; // contains an &nbsp; escape sequence
+    pill.appendChild(reason);
+    verdictBlock.appendChild(pill);
+    const actions = el("div", { class: "lens-verdict-actions" });
+    actions.appendChild(el("span", { class: "replay-tag" }, "replay · frozen 2026-05-04"));
+    actions.appendChild(el("span", { class: "id" }, "run_" + Math.abs(hashCode(detail.name)).toString(16).slice(0, 6)));
+    verdictBlock.appendChild(actions);
+    view.appendChild(verdictBlock);
 
     // ---- METRICS ----
     const metrics = el("div", { class: "lens-metrics fade-in" }, [
@@ -239,20 +328,6 @@
     const wo = u.wo_passed_items || 0;
     const findings = s.findings || [];
     const triggered = findings.filter(function (f) { return f.risk_triggered === true; }).length;
-
-    let headline;
-    if (effT.tone === "good" && safT.tone === "good") {
-      headline = "Useful and clean — adopt without sandboxing.";
-    } else if (effT.tone === "good" && safT.tone !== "good") {
-      headline = "Useful but unsafe — adopt only behind a sandbox.";
-    } else if (effT.tone !== "good" && safT.tone === "good") {
-      headline = "Safe but no measured gain — installation has no observable upside.";
-    } else if (effT.tone === "bad") {
-      headline = "Performance regression detected — installing this skill makes the agent worse.";
-    } else {
-      headline = "Marginal effectiveness, mixed safety — borderline adoption case.";
-    }
-    inner.appendChild(el("p", { class: "headline" }, headline));
 
     inner.appendChild(el("p", null,
       "Across " + ((u.scenarios || []).length) + " scenarios the agent passed " +
@@ -558,8 +633,12 @@
     }
     return loadJson("data/skill/" + encodeURIComponent(name) + ".json").then(function (d) {
       renderLensView(d);
-      const target = document.getElementById("lens");
-      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      const target = document.getElementById("lens-view");
+      if (target) {
+        // scroll to a position 80px above the lens-view so the topbar doesn't cover it
+        const y = target.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
     }).catch(function (err) {
       console.error("[skilllens] failed to load detail for", name, err);
       if (view) {
@@ -699,7 +778,7 @@
 
   /* ------------------------------------------------- 5. misc */
 
-  function fillHeroStats(stats) {
+  function fillHeroStats(stats, idx) {
     const t = stats.totals || {};
     function set(id, v) { const n = document.getElementById(id); if (n && v != null) n.textContent = NUMBER_FORMAT.format(v); }
     set("m-skills",    t.skill_count);
@@ -707,6 +786,15 @@
     set("m-judge",     t.judge_items);
     set("m-findings",  t.total_findings);
     set("m-trig",      t.findings_triggered);
+
+    // Compute "unsafe" = skills with safety_score < 80 OR with any triggered finding.
+    if (idx && idx.skills) {
+      const unsafe = idx.skills.filter(function (sk) {
+        return (sk.safety_score != null && sk.safety_score < 80) || (sk.findings_triggered || 0) > 0;
+      }).length;
+      set("m-unsafe", unsafe);
+    }
+
     const ti = document.getElementById("inbox-total");
     if (ti && t.findings_triggered != null) ti.textContent = String(t.findings_triggered);
   }
@@ -779,7 +867,7 @@
     const stats = results[1];
     const inbox = results[2];
 
-    fillHeroStats(stats);
+    fillHeroStats(stats, idx);
     setupLookup(idx);
     setupInbox(inbox, idx);
     setupReveal();
