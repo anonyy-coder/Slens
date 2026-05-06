@@ -1,0 +1,9 @@
+# editor and OS
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# headless test artifacts
+_smoke*.png
+_rendered.html
