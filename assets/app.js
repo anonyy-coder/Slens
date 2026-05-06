@@ -220,12 +220,14 @@
     const who = el("div", { class: "who" });
     who.appendChild(el("span", { class: "now" }, "Inspecting"));
     who.appendChild(el("h2", null, detail.name));
-    who.appendChild(el("span", { class: "skill-cat" }, [
-      document.createTextNode("owner "),
-      el("b", { style: "color: var(--fg-2);" }, detail.owner || "—"),
-      document.createTextNode("  ·  " + categoryLabel(detail.category)),
-      document.createTextNode("  ·  " + ((u.scenarios || []).length) + " scenarios"),
-    ]));
+    const owner = detail.owner && detail.owner !== "unknown" ? detail.owner : null;
+    const sourceParts = [];
+    sourceParts.push(document.createTextNode(owner ? "by " : "source "));
+    sourceParts.push(el("b", { style: "color: var(--fg-2);" }, owner || "unknown"));
+    if (owner) {
+      sourceParts.push(document.createTextNode("  ·  github.com/" + owner + "/" + detail.name));
+    }
+    who.appendChild(el("span", { class: "skill-cat" }, sourceParts));
     head.appendChild(who);
     view.appendChild(head);
 
