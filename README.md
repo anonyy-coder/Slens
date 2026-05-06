@@ -533,6 +533,24 @@ The script is idempotent and safe to re-run on already-sanitized output.
 
 ---
 
+## Companion browser extension
+
+The paper describes a browser extension that surfaces SkillLens results
+at the point where a developer is browsing skill marketplaces — turning
+the "should I install this skill?" question into a one-click lookup.
+
+The extension is in active development and **is not yet ready for public
+release**. A companion repository will appear at
+`github.com/anonyy-coder/skilllens-extension` once the implementation
+matures. In the meantime, the artifacts site at
+[`anonyy-coder.github.io/skilllens-artifacts`](https://anonyy-coder.github.io/skilllens-artifacts/)
+already serves the same per-skill report payloads (under
+`docs/data/skills/*.json`) that the extension is built to consume, so
+reviewers can preview the look-up surface end-to-end via the site without
+running the extension itself.
+
+---
+
 ## Limitations
 
 The framework as released has several scope boundaries that should be made
