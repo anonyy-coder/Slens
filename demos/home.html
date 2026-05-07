@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>SkillTestBench | Skill-as-input evaluation</title>
-  <meta name="description" content="SkillTestBench evaluates an arbitrary SKILL.md by generating skill-specific tasks, running paired with-skill and no-skill agents, and reporting utility, safety, and cost.">
+  <title>SkillLens | Skill-as-input evaluation</title>
+  <meta name="description" content="SkillLens evaluates an arbitrary SKILL.md by generating skill-specific tasks, running paired with-skill and no-skill agents, and reporting utility, safety, and cost.">
   <style>
 :root {
   --paper: #f4f6f2;
@@ -886,30 +886,30 @@ h1 {
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="#" aria-label="SkillTestBench home">
+    <a class="brand" href="#" aria-label="SkillLens home">
       <span class="brand-mark" aria-hidden="true">S</span>
       <span class="brand-word">
-        <strong>SkillTestBench</strong>
+        <strong>SkillLens</strong>
         <span>Skill-as-input benchmark</span>
       </span>
     </a>
     <nav class="topnav" aria-label="Primary">
       <a class="is-active" href="#">Home</a>
-      <a href="SkillTestBench_skills_demo.html">Skills</a>
-      <a href="SkillTestBench_report_demo.html">Report</a>
+      <a href="skills.html">Skills</a>
+      <a href="report.html">Report</a>
       <a href="#method">Method</a>
       <a href="https://github.com" target="_blank" rel="noreferrer">GitHub</a>
     </nav>
   </header>
 
   <main class="page">
-    <section class="workbench" aria-label="SkillTestBench workbench">
+    <section class="workbench" aria-label="SkillLens workbench">
       <aside class="panel input-panel">
         <div class="input-head">
           <p class="kicker">Evaluate before enabling</p>
           <h1>A benchmark generated from the SKILL itself.</h1>
           <p class="lead">
-            SkillTestBench treats a <strong>SKILL.md package as the input</strong>. It profiles the skill, generates
+            SkillLens treats a <strong>SKILL.md package as the input</strong>. It profiles the skill, generates
             capability-targeted tasks, runs matched with-skill and no-skill agents, and reports deployment evidence.
           </p>
         </div>
@@ -952,7 +952,7 @@ h1 {
             <span class="decision-label">Recommendation</span>
             <strong id="decision-title">Enable with budget monitoring</strong>
             <p id="decision-copy">The skill improves research synthesis tasks and did not trigger confirmed runtime risk in the demo evidence.</p>
-            <a class="report-link" id="report-link" href="SkillTestBench_report_demo.html?skill=academic-researcher">View single-skill report -></a>
+            <a class="report-link" id="report-link" href="report.html?skill=academic-researcher">View single-skill report -></a>
           </div>
         </section>
       </aside>
@@ -975,7 +975,7 @@ h1 {
             </div>
           </div>
 
-          <div class="pipeline" aria-label="SkillTestBench pipeline">
+          <div class="pipeline" aria-label="SkillLens pipeline">
             <article class="pipe-step">
               <span class="pipe-num">01</span>
               <h3>Skill package</h3>
@@ -1075,7 +1075,7 @@ h1 {
           </p>
         </article>
         <article class="compare-box highlight">
-          <h3>SkillTestBench</h3>
+          <h3>SkillLens</h3>
           <p>
             Each skill produces its own task schemes. The paired condition then isolates the marginal effect of
             enabling the skill while keeping task content and environment matched.
@@ -1105,7 +1105,7 @@ h1 {
           <h2>Recently evaluated skills</h2>
           <p>Select a row to update the generated tasks and paired-run summary above.</p>
         </div>
-        <a class="table-link" href="SkillTestBench_skills_demo.html">Open skills page -></a>
+        <a class="table-link" href="skills.html">Open skills page -></a>
       </div>
       <table class="report-table">
         <thead>
@@ -1302,7 +1302,7 @@ const DEMO = [
     $("metric-cost-note").textContent = selected.costNote;
     $("decision-title").textContent = selected.verdict;
     $("decision-copy").textContent = selected.decisionCopy;
-    $("report-link").href = `SkillTestBench_report_demo.html?skill=${encodeURIComponent(selected.skillName)}`;
+    $("report-link").href = `report.html?skill=${encodeURIComponent(selected.skillName)}`;
     $("task-heading").textContent = `Tasks generated for ${selected.skillName}`;
     $("wo-instruction").textContent = selected.firstInstruction;
     $("wi-instruction").textContent = selected.firstInstruction;
@@ -1354,9 +1354,9 @@ const DEMO = [
       skill.skillName.toLowerCase() === parsed.repo
     );
     if (hit) {
-      window.location.href = `SkillTestBench_report_demo.html?skill=${encodeURIComponent(hit.skillName)}`;
+      window.location.href = `report.html?skill=${encodeURIComponent(hit.skillName)}`;
     } else {
-      window.location.href = `SkillTestBench_skills_demo.html?queued=${encodeURIComponent(parsed.owner + "/" + parsed.repo)}`;
+      window.location.href = `skills.html?queued=${encodeURIComponent(parsed.owner + "/" + parsed.repo)}`;
     }
   });
 
