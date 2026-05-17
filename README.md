@@ -1,5 +1,9 @@
 # SkillLens — Evaluation Harness
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20253170.svg)](https://doi.org/10.5281/zenodo.20253170)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Dataset License: CDLA-Permissive-2.0](https://img.shields.io/badge/Dataset-CDLA--Permissive--2.0-green.svg)](https://cdla.dev/permissive-2-0/)
+
 **SkillLens** is an evaluation framework for Anthropic-style `/skill` markdown packages
 consumed by LLM coding agents. Given a `SKILL.md` and its supporting files, SkillLens
 generates utility and security probes, executes them inside an isolated Harbor
@@ -20,6 +24,11 @@ The companion landing page is at
 > `github.com/anonyy-coder/SkillLens` and its dependency
 > `github.com/anonyy-coder/harbor` (an Apache-2.0 fork of `laude-institute/harbor`)
 > were created solely to host anonymized review materials.
+>
+> **Dataset:** the evaluation traces and Croissant 1.0 + RAI/1.0 metadata are
+> published as a separate Zenodo record, DOI [`10.5281/zenodo.20253170`](https://doi.org/10.5281/zenodo.20253170).
+> Reviewer access is provided via the anonymous shared link in the OpenReview
+> submission. License: **CDLA-Permissive-2.0**.
 
 ---
 
@@ -628,6 +637,7 @@ double-blind review period the entry lists the work as
 ```
 SkillLens: From Task-First Evaluation to Skill-Centered Assessment.
 Anonymous Authors. 2026.
+Zenodo. https://doi.org/10.5281/zenodo.20253170
 ```
 
 The full citation, including author affiliations and the canonical proceedings
